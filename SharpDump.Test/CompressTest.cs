@@ -6,18 +6,8 @@ using Xunit;
 
 namespace SharpDump.Test
 {
-    public class DumpTest
+    public class CompressTest
     {
-        [Fact]
-        public void IsHighIntegrity()
-        {
-            // arrange
-            // act
-            var anyResult = Dump.IsHighIntegrity();
-
-            //assert
-        }
-
         [Theory]
         [InlineData(null)]
         [InlineData("")]
