@@ -26,4 +26,10 @@
     <ProjectReference Include="..\SharpDump.Logic\SharpDump.Logic.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\existedOutput.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

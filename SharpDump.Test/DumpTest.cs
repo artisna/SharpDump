@@ -4,6 +4,7 @@ using Moq;
 using FluentAssertions;
 using System;
 using System.Linq;
+using System.IO;
 
 namespace SharpDump.Test
 {
@@ -35,6 +36,23 @@ namespace SharpDump.Test
 
             //assert
             logger.Logs.Last().Should().Contain(expectedLog);
+        }
+
+        [Fact]
+        public void Compress_WithExistedOutputFile_RemoveIt()
+        {
+            // arrange
+            var logger = new StatusLogger();
+            var inputFile = "";
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var existedOutputFilePath = Path.Combine(currentDirectory, "Data", "existedOutput.txt");
+            var expectedLog = $"[X] Output file '{existedOutputFilePath}' already exists, removing";
+
+            // act
+            Dump.Compress(logger, inputFile, existedOutputFilePath);
+
+            //assert
+            logger.Logs.Should().Contain(expectedLog);
         }
     }
 }
