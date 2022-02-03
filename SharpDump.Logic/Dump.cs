@@ -22,13 +22,13 @@ namespace SharpDump.Logic
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
 
-        public static void Compress(string inFile, string outFile)
+        public static void Compress(IStatusLogger logger, string inFile, string outFile)
         {
             try
             {
                 if (File.Exists(outFile))
                 {
-                    Console.WriteLine("[X] Output file '{0}' already exists, removing", outFile);
+                    logger.Log("[X] Output file '{0}' already exists, removing", outFile);
                     File.Delete(outFile);
                 }
 
@@ -43,11 +43,11 @@ namespace SharpDump.Logic
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[X] Exception while compressing file: {0}", ex.Message);
+                logger.Log("[X] Exception while compressing file: {0}", ex.Message);
             }
         }
 
-        public static void Minidump(int pid = -1)
+        public static void Minidump(IStatusLogger logger, int pid = -1)
         {
             IntPtr targetProcessHandle = IntPtr.Zero;
             uint targetProcessId = 0;
@@ -107,7 +107,7 @@ namespace SharpDump.Logic
                 Console.WriteLine("[+] Dump successful!");
                 Console.WriteLine(String.Format("\n[*] Compressing {0} to {1} gzip file", dumpFile, zipFile));
 
-                Compress(dumpFile, zipFile);
+                Compress(logger, dumpFile, zipFile);
 
                 Console.WriteLine(String.Format("[*] Deleting {0}", dumpFile));
                 File.Delete(dumpFile);

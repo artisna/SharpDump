@@ -3,13 +3,14 @@ using SharpDump.Logic;
 using Moq;
 using FluentAssertions;
 using System;
+using System.Linq;
 
 namespace SharpDump.Test
 {
     public class DumpTest
     {
         [Fact]
-        public void IsHighIntegrity() 
+        public void IsHighIntegrity()
         {
             // arrange
             // act
@@ -19,19 +20,21 @@ namespace SharpDump.Test
         }
 
         [Theory]
-        [InlineData(null,null)]
+        [InlineData(null, null)]
         [InlineData("", "")]
         [InlineData(" ", " ")]
         [InlineData("input.in", "output.out")]
         public void Compress_WithInvalidInputOutputFile_ThrowException(string inputFile, string outputFile)
         {
             // arrange
+            var logger = new StatusLogger();
+            var expectedLog = "[X] Exception while compressing file: ";
 
             // act
-            Action compression = () => Dump.Compress(inputFile, outputFile);
+            Dump.Compress(logger, inputFile, outputFile);
 
             //assert
-            compression.Should().Throw<Exception>();
+            logger.Logs.Last().Should().Contain(expectedLog);
         }
     }
 }
