@@ -1,5 +1,8 @@
 using Xunit;
-using SharpDump;
+using SharpDump.Logic;
+using Moq;
+using FluentAssertions;
+using System;
 
 namespace SharpDump.Test
 {
@@ -10,8 +13,25 @@ namespace SharpDump.Test
         {
             // arrange
             // act
-            //asset
-            //var anyResult = SharpDump.
+            var anyResult = Dump.IsHighIntegrity();
+
+            //assert
+        }
+
+        [Theory]
+        [InlineData(null,null)]
+        [InlineData("", "")]
+        [InlineData(" ", " ")]
+        [InlineData("input.in", "output.out")]
+        public void Compress_WithInvalidInputOutputFile_ThrowException(string inputFile, string outputFile)
+        {
+            // arrange
+
+            // act
+            Action compression = () => Dump.Compress(inputFile, outputFile);
+
+            //assert
+            compression.Should().Throw<Exception>();
         }
     }
 }
