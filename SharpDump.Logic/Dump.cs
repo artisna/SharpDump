@@ -47,58 +47,26 @@ namespace SharpDump.Logic
             }
         }
 
-        public static void Minidump(IStatusLogger logger, int pid = -1)
+        public static void Minidump(IStatusLogger logger, IProcessProvider processProvider, int pid = -1)
         {
-            IntPtr targetProcessHandle = IntPtr.Zero;
-            uint targetProcessId = 0;
-
-            Process targetProcess = null;
-            if (pid == -1)
+            var targetProcess = processProvider.GetProcess(pid);
+            if (targetProcess is null)
             {
-                Process[] processes = Process.GetProcessesByName("lsass");
-                targetProcess = processes[0];
-            }
-            else
-            {
-                try
-                {
-                    targetProcess = Process.GetProcessById(pid);
-                }
-                catch (Exception ex)
-                {
-                    // often errors if we can't get a handle to LSASS
-                    logger.Log(String.Format("\n[X]Exception: {0}\n", ex.Message));
-                    return;
-                }
-            }
-
-            if (targetProcess.ProcessName == "lsass" && !IsHighIntegrity())
-            {
-                logger.Log("\n[X] Not in high integrity, unable to MiniDump!\n");
+                logger.Log($"Target process (pid={pid}) not found");
                 return;
             }
 
-            try
-            {
-                targetProcessId = (uint)targetProcess.Id;
-                targetProcessHandle = targetProcess.Handle;
-            }
-            catch (Exception ex)
-            {
-                logger.Log(String.Format("\n[X] Error getting handle to {0} ({1}): {2}\n", targetProcess.ProcessName, targetProcess.Id, ex.Message));
-                return;
-            }
             bool bRet = false;
 
             string systemRoot = Environment.GetEnvironmentVariable("SystemRoot");
-            string dumpFile = String.Format("{0}\\Temp\\debug{1}.out", systemRoot, targetProcessId);
-            string zipFile = String.Format("{0}\\Temp\\debug{1}.bin", systemRoot, targetProcessId);
+            string dumpFile = String.Format("{0}\\Temp\\debug{1}.out", systemRoot, targetProcess.ProcessId);
+            string zipFile = String.Format("{0}\\Temp\\debug{1}.bin", systemRoot, targetProcess.ProcessId);
 
-            logger.Log(String.Format("\n[*] Dumping {0} ({1}) to {2}", targetProcess.ProcessName, targetProcess.Id, dumpFile));
+            logger.Log(String.Format("\n[*] Dumping {0} ({1}) to {2}", targetProcess.ProcessName, targetProcess.ProcessId, dumpFile));
 
             using (FileStream fs = new FileStream(dumpFile, FileMode.Create, FileAccess.ReadWrite, FileShare.Write))
             {
-                bRet = MiniDumpWriteDump(targetProcessHandle, targetProcessId, fs.SafeFileHandle, (uint)2, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+                bRet = MiniDumpWriteDump(targetProcess.ProcesHandle, targetProcess.ProcessId, fs.SafeFileHandle, (uint)2, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
             }
 
             // if successful
@@ -111,7 +79,7 @@ namespace SharpDump.Logic
 
                 logger.Log(String.Format("[*] Deleting {0}", dumpFile));
                 File.Delete(dumpFile);
-                logger.Log("\n[+] Dumping completed. Rename file to \"debug{0}.gz\" to decompress.", targetProcessId);
+                logger.Log("\n[+] Dumping completed. Rename file to \"debug{0}.gz\" to decompress.", targetProcess.ProcessId);
 
                 string arch = System.Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
                 string OS = "";

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
+﻿using FluentAssertions;
+using Moq;
 using SharpDump.Logic;
-using FluentAssertions;
+using Xunit;
 
 namespace SharpDump.Test
 {
@@ -19,9 +15,10 @@ namespace SharpDump.Test
         {
             // arrange
             var logger = new StatusLogger();
+            var mockedProcessProvider = new Mock<IProcessProvider>();
 
             // act
-            Dump.Minidump(logger, processId);
+            Dump.Minidump(logger, mockedProcessProvider.Object, processId);
 
             //assert
             logger.Logs.Should().NotBeEmpty();

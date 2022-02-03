@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SharpDump.Infrastructure\SharpDump.Infrastructure.csproj" />
     <ProjectReference Include="..\SharpDump.Logic\SharpDump.Logic.csproj" />
   </ItemGroup>
 
